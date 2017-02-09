@@ -73,6 +73,6 @@ df_test['rotatablebonds'] = rotatablebonds_test
 df_test['pibonds'] = pibonds_test
 
 print(df_train.head())
-df_train.to_csv('newTrain.csv', sep='\t')
-df_test.to_csv('newTest.csv', sep='\t')
+df_train.to_csv('newTrain.csv', sep=',')
+df_test.to_csv('newTest.csv', sep=',')
 print("--- %s seconds ---" % (time.time() - start_time))
