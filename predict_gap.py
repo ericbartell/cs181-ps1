@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import BayesianRidge
 from sklearn.model_selection import cross_val_score
 
 
@@ -23,8 +24,8 @@ testFile = "newTest.csv"
 #testFile = "test_small.csv"
 
 
-df_train = pd.read_csv(trainFile,delimiter='\t')
-df_test = pd.read_csv(testFile,delimiter='\t')
+df_train = pd.read_csv(trainFile)
+df_test = pd.read_csv(testFile)
 
 print("done loading")
 
@@ -126,7 +127,7 @@ RF = RandomForestRegressor()
 # print("\nRandom Forest:")
 # print(scores)
 # print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
-
+BR = BayesianRidge()
 
 # In[14]:
 
@@ -176,9 +177,10 @@ def plot_accuracies_diff_data(list_models_and_X_and_Y_data):
 	score_list = []
 	for i in list_models_and_X_and_Y_data:
 		counter += 1
+		print("Doing cross validation for model " + str(counter))
 		scores = cross_val_score(i[0],i[1], i[2],cv=5,scoring='neg_mean_squared_error')
-		ax.plot(counter,-scores.mean(),colors[counter%len(colors)]+'o',label=str(i).split("(")[0])
-		score_list.append(-scores.mean())
+		ax.plot(counter,-(scores.mean())**(.5),colors[counter%len(colors)]+'o',label=str(i).split("(")[0])
+		score_list.append(-(scores.mean())**(.5))
 
 	ax.set_xlim(0-counter/5.0,counter+counter/5.0) 
 	ax.legend(loc='best')#bbox_to_anchor=(1.6, 1.1))
@@ -191,7 +193,7 @@ def plot_accuracies_diff_data(list_models_and_X_and_Y_data):
 
 # In[28]:
 
-models = [LR,RF]
+models = [LR,RF,BR]
 list_of_scores = plot_accuracies(models,X_train,Y_train)
 bestModelIndex = list_of_scores.index(min(list_of_scores))
 bestModelScore = list_of_scores[bestModelIndex]
@@ -199,6 +201,7 @@ print("BEST MODEL SCORE IS " + str(bestModelScore))
 bestModel = models[bestModelIndex]
 print("BEST MODEL " + str(bestModel))
 bestModel.fit(X_train, Y_train)
+print(RMSE(bestModel.predict(X_train,Y_train)))
 best_model_pred = bestModel.predict(X_test)
 
 #note: number of cross valids seems to make a huge difference
@@ -217,7 +220,7 @@ best_model_pred = bestModel.predict(X_test)
 # RF = RandomForestRegressor()
 # RF.fit(X_train, Y_train)
 # RF_train = RF.predict(X_train)
-RF_pred = RF.predict(X_test)
+#RF_pred = RF.predict(X_test)
 
 
 # In[17]:
@@ -232,7 +235,7 @@ def write_to_file(filename, predictions):
 # In[18]:
 print("WRITING TO FILE")
 
-write_to_file("bestModelPredictions.csv", best_model_pred)
+write_to_file("bestModelPredictions_01.csv", best_model_pred)
 #write_to_file("sample1_1.csv", LR_pred)
 #write_to_file("sample2_1.csv", RF_pred)
 
